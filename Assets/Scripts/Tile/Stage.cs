@@ -1,0 +1,241 @@
+using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
+
+public class Stage : MonoBehaviour
+{
+    public GameObject tilePrefabs;
+    private GameObject[] tileObjs;
+
+    public int mapWidth = 20;
+    public int mapHeight = 20;
+
+    [Range(0f, 0.9f)]
+    public float erodePercent = 0.5f;
+    [Range(0f, 0.9f)]
+    public float lakePercent = 0.1f;
+    [Range(0f, 0.9f)]
+    public float treePercent = 0.1f;
+    [Range(0f, 0.9f)]
+    public float hillPercent = 0.1f;
+    [Range(0f, 0.9f)]
+    public float mountainPercent = 0.1f;
+    [Range(0f, 0.9f)]
+    public float townPercent = 0.1f;
+    [Range(0f, 0.9f)]
+    public float monsterPercent = 0.1f;
+
+    public int erodeIterations = 2;
+
+    public Vector2 tileSize = new Vector2(16, 16);
+
+    public Sprite[] islandSprites;
+
+    private Map map;
+
+    public Map Map => map;
+
+    public PlayerMovement playerPrefab;
+    private PlayerMovement player;
+
+    private int prevTileId = -1;
+    public int PrevTileId => prevTileId;
+
+    public int FowRange = 3;
+    public Sprite[] fowSprites;
+
+    public Vector3 FirstTilePos 
+    {
+        get
+        {
+            var pos = transform.position;
+            pos.x -= (mapWidth * tileSize.x * 0.5f);
+            pos.y += (mapHeight * tileSize.y * 0.5f);
+            pos.x += tileSize.x * 0.5f;
+            pos.y -= tileSize.y * 0.5f;
+            return pos;
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ResetStage();
+        }
+
+        if (tileObjs != null)
+        {
+            int currentTileId = ScreenPosToTileId(Input.mousePosition);
+            if (prevTileId != currentTileId)
+            {
+                tileObjs[currentTileId].GetComponent<SpriteRenderer>().color = Color.green;
+                if (prevTileId >= 0 && prevTileId < tileObjs.Length)
+                {
+                    tileObjs[prevTileId].GetComponent<SpriteRenderer>().color = Color.white;
+                }
+                prevTileId = currentTileId;
+            }
+        }
+    }
+
+    private void ResetStage()
+    {
+        map = new Map();
+        map.Init(mapHeight, mapWidth);
+        map.CreateIsland(erodePercent, erodeIterations, lakePercent, treePercent, hillPercent, mountainPercent, townPercent, monsterPercent);
+        CreateGrid();
+        CreatePlayer();
+        UpdateVisibility(map.startTile.id);
+    }
+
+    private void CreatePlayer()
+    {
+        if (player != null)
+        {
+            Destroy(player.gameObject);
+        }
+
+        player = Instantiate(playerPrefab);
+        player.MoveTo(map.startTile.id);
+    }
+
+    private void CreateGrid()
+    {
+        if (tileObjs != null)
+        {
+            foreach (var tile in tileObjs)
+            {
+                Destroy(tile.gameObject);
+            }
+        }
+
+        tileObjs = new GameObject[mapWidth * mapHeight];
+
+        var position = FirstTilePos;
+
+        for (int i = 0; i < mapHeight; i++)
+        {
+            for (int j = 0; j < mapWidth; j++)
+            {
+                int tileId = i * mapWidth + j;
+                var newGo = Instantiate(tilePrefabs, transform);
+                newGo.transform.position = position; 
+                position.x += tileSize.x;
+
+                tileObjs[tileId] = newGo;
+                DecorateTile(tileId);
+            }
+            position.x = FirstTilePos.x;
+            position.y -= tileSize.y;
+        }
+    }
+
+    public void DecorateTile(int tileId)
+    {
+        var tile = map.tiles[tileId];
+        var tileGo = tileObjs[tileId];
+        var ren = tileGo.GetComponent<SpriteRenderer>();
+
+        if (tile.isVisited)
+        {
+            if (tile.autoTileId != (int)TileTypes.Empty)
+            {
+                ren.sprite = islandSprites[tile.autoTileId];
+                ren.color = Color.white;
+            }
+            else
+            {
+                ren.sprite = null;
+            }
+        }
+        else
+        {
+            tile.UpdateFowTileId(map);
+
+            if (fowSprites != null && tile.fowTilleId < fowSprites.Length)
+            {
+                ren.sprite = fowSprites[tile.fowTilleId];
+            }
+        }
+
+        //if (tile.autoTileId != (int)TileTypes.Empty)
+        //{
+        //    if (!tile.isVisited)
+        //    {
+        //        ren.sprite = fowSprites[tile.fowTilleId];
+        //    }
+        //    else
+        //    {
+        //        ren.sprite = islandSprites[tile.autoTileId];
+        //    }
+        //}
+        //else
+        //{
+        //    ren.sprite = null;
+        //}
+    }
+
+    public int ScreenPosToTileId(Vector3 screenPos)
+    {
+        screenPos.z = Mathf.Abs(transform.position.z - Camera.main.transform.position.z);
+
+        var worldPos = Camera.main.ScreenToWorldPoint(screenPos);
+        return WorldPosToTileId(worldPos);
+    }
+
+    public int WorldPosToTileId(Vector3 worldPos)
+    {
+        var first = FirstTilePos;
+
+        int x = Mathf.FloorToInt((worldPos.x - first.x) / tileSize.x + 0.5f);
+        int y = Mathf.FloorToInt((first.y - worldPos.y) / tileSize.y + 0.5f);
+
+        x = Mathf.Clamp(x, 0, mapWidth - 1);
+        y = Mathf.Clamp(y, 0, mapHeight - 1);
+
+        return y * mapWidth + x;
+    }
+
+    public Vector3 GetTilePos(int y, int x)
+    {
+        return FirstTilePos + new Vector3(x * tileSize.x, -y * tileSize.y, 0);
+    }
+  
+
+    public Vector3 GetTilePos(int tileId)
+    {
+        int y = tileId / mapWidth;
+        int x = tileId % mapWidth;
+
+        return GetTilePos(y, x);
+    }
+
+    public void UpdateVisibility(int centerTileId)
+    {
+        int centerY = centerTileId / mapWidth;
+        int centerX = centerTileId % mapWidth;
+
+        for (int y = centerY - FowRange; y <= centerY + FowRange; y++)
+        {
+            for (int x = centerX - FowRange; x <= centerX + FowRange; x++)
+            {
+                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
+
+                int tileId = y * mapWidth + x;
+                map.tiles[tileId].isVisited = true;
+            }
+        }
+
+        int visualRange = FowRange + 1;
+        for (int y = centerY - visualRange; y <= centerY + visualRange; y++)
+        {
+            for (int x = centerX - visualRange; x <= centerX + visualRange; x++)
+            {
+                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
+
+                int tileId = y * mapWidth + x;
+                DecorateTile(tileId);
+            }
+        }
+    }
+}

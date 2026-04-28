@@ -119,6 +119,104 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &1896762837
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1896762839}
+  - component: {fileID: 1896762838}
+  m_Layer: 0
+  m_Name: Stage
+  m_TagString: Map
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1896762838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896762837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c2fcb54fac01d741808d59cde9ff84e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Stage
+  tilePrefabs: {fileID: 7725092079009029771, guid: 45cbd31f8c5d064499897a7b4b423559, type: 3}
+  mapWidth: 20
+  mapHeight: 20
+  erodePercent: 0.5
+  lakePercent: 0.1
+  treePercent: 0.1
+  hillPercent: 0.1
+  mountainPercent: 0.1
+  townPercent: 0.1
+  monsterPercent: 0.1
+  erodeIterations: 2
+  tileSize: {x: 16, y: 16}
+  islandSprites:
+  - {fileID: 21300000, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300002, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300004, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300006, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300008, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300010, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300012, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300014, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300016, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300018, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300020, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300022, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300024, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300026, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300028, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300030, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300032, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300034, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300036, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300038, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300040, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  - {fileID: 21300042, guid: 6dda2095192964815b349ac505a5e664, type: 3}
+  playerPrefab: {fileID: 7046261964037500245, guid: 37b0868a10e95b94db3d766b56dc3cfe, type: 3}
+  FowRange: 2
+  fowSprites:
+  - {fileID: 21300000, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300002, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300004, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300006, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300008, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300010, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300012, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300014, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300016, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300018, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300020, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300022, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300024, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300026, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300028, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+  - {fileID: 21300030, guid: dfa5f63634ba24c06a7c899467e4f9f3, type: 3}
+--- !u!4 &1896762839
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896762837}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2097561652
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,6 +228,7 @@ GameObject:
   - component: {fileID: 2097561655}
   - component: {fileID: 2097561654}
   - component: {fileID: 2097561653}
+  - component: {fileID: 2097561656}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -180,7 +279,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 200
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -211,8 +310,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2097561656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2097561652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 2097561655}
+  - {fileID: 1896762839}
