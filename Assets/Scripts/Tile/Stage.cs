@@ -1,5 +1,4 @@
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
 
 public class Stage : MonoBehaviour
 {
@@ -96,7 +95,7 @@ public class Stage : MonoBehaviour
         }
 
         player = Instantiate(playerPrefab);
-        player.MoveTo(map.startTile.id);
+        player.SetPosition(map.startTile.id);
     }
 
     private void CreateGrid()
@@ -136,18 +135,19 @@ public class Stage : MonoBehaviour
         var tileGo = tileObjs[tileId];
         var ren = tileGo.GetComponent<SpriteRenderer>();
 
+        // 방문한 타일은 기존 로직
         if (tile.isVisited)
         {
             if (tile.autoTileId != (int)TileTypes.Empty)
             {
                 ren.sprite = islandSprites[tile.autoTileId];
-                ren.color = Color.white;
             }
             else
             {
                 ren.sprite = null;
             }
         }
+        // 방문하지 않은 타일은 FOW 타일로 업데이트
         else
         {
             tile.UpdateFowTileId(map);
@@ -157,22 +157,6 @@ public class Stage : MonoBehaviour
                 ren.sprite = fowSprites[tile.fowTilleId];
             }
         }
-
-        //if (tile.autoTileId != (int)TileTypes.Empty)
-        //{
-        //    if (!tile.isVisited)
-        //    {
-        //        ren.sprite = fowSprites[tile.fowTilleId];
-        //    }
-        //    else
-        //    {
-        //        ren.sprite = islandSprites[tile.autoTileId];
-        //    }
-        //}
-        //else
-        //{
-        //    ren.sprite = null;
-        //}
     }
 
     public int ScreenPosToTileId(Vector3 screenPos)
@@ -215,23 +199,27 @@ public class Stage : MonoBehaviour
         int centerY = centerTileId / mapWidth;
         int centerX = centerTileId % mapWidth;
 
+        // 중심 타일을 기준으로 FOW 범위 내의 타일을 방문 처리
         for (int y = centerY - FowRange; y <= centerY + FowRange; y++)
         {
             for (int x = centerX - FowRange; x <= centerX + FowRange; x++)
             {
-                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
+                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+                    continue;
 
                 int tileId = y * mapWidth + x;
                 map.tiles[tileId].isVisited = true;
             }
         }
 
+        // FOW 범위 + 경계 타일까지 DecorateTile() 호출해서 안개 표현
         int visualRange = FowRange + 1;
         for (int y = centerY - visualRange; y <= centerY + visualRange; y++)
         {
             for (int x = centerX - visualRange; x <= centerX + visualRange; x++)
             {
-                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
+                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+                    continue;
 
                 int tileId = y * mapWidth + x;
                 DecorateTile(tileId);
