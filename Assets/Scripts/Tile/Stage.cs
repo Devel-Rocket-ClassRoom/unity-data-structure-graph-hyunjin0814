@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Stage : MonoBehaviour
@@ -29,6 +30,8 @@ public class Stage : MonoBehaviour
 
     public Sprite[] islandSprites;
 
+    public Sprite[] fowSprites;
+
     private Map map;
 
     public Map Map => map;
@@ -40,7 +43,6 @@ public class Stage : MonoBehaviour
     public int PrevTileId => prevTileId;
 
     public int FowRange = 3;
-    public Sprite[] fowSprites;
 
     public Vector3 FirstTilePos 
     {
@@ -54,6 +56,8 @@ public class Stage : MonoBehaviour
             return pos;
         }
     }
+
+    TileSearch tileSearch = new TileSearch();
 
     private void Update()
     {
@@ -75,17 +79,49 @@ public class Stage : MonoBehaviour
                 prevTileId = currentTileId;
             }
         }
+
+        // 마우스 클릭 시 타일 아이디만 넘겨서 이동 자체는 플레이어에서 처리하도록 변경 해야함
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (player == null)
+                return;
+
+            int currentTileId = ScreenPosToTileId(Input.mousePosition);
+
+            if (tileSearch.AStar(map.tiles[player.CurrentTileId], map.tiles[currentTileId]))
+            {
+                player.FollowPath(new List<Tile>(tileSearch.path));
+            }
+        }
     }
 
     private void ResetStage()
     {
-        map = new Map();
-        map.Init(mapHeight, mapWidth);
-        map.CreateIsland(erodePercent, erodeIterations, lakePercent, treePercent, hillPercent, mountainPercent, townPercent, monsterPercent);
-        CreateGrid();
+        while (true)
+        {
+            map = new Map();
+            map.Init(mapHeight, mapWidth);
+            tileSearch.Init(Map);
+            map.CreateIsland(erodePercent, erodeIterations, lakePercent, treePercent, hillPercent, mountainPercent, townPercent, monsterPercent);
+            CreateGrid();
+
+            if (tileSearch.AStar(map.startTile, map.castleTile))
+            {
+                //stagePath = tileSearch.path;
+                break;
+            }
+        }
+
         CreatePlayer();
-        UpdateVisibility(map.startTile.id);
+        OnTileVisited(map.tiles[map.startTile.id]);
+        //GoPath();
+        //UpdateVisibility(map.startTile.id);
     }
+
+    //private void GoPath()
+    //{
+    //    player.FollowPath(stagePath);
+    //}
 
     private void CreatePlayer()
     {
@@ -135,7 +171,6 @@ public class Stage : MonoBehaviour
         var tileGo = tileObjs[tileId];
         var ren = tileGo.GetComponent<SpriteRenderer>();
 
-        // 방문한 타일은 기존 로직
         if (tile.isVisited)
         {
             if (tile.autoTileId != (int)TileTypes.Empty)
@@ -147,17 +182,42 @@ public class Stage : MonoBehaviour
                 ren.sprite = null;
             }
         }
-        // 방문하지 않은 타일은 FOW 타일로 업데이트
         else
         {
-            tile.UpdateFowTileId(map);
-
-            if (fowSprites != null && tile.fowTilleId < fowSprites.Length)
-            {
-                ren.sprite = fowSprites[tile.fowTilleId];
-            }
+            ren.sprite = fowSprites[tile.fowTilleId];
         }
     }
+
+
+    //public void DecorateTile(int tileId)
+    //{
+    //    var tile = map.tiles[tileId];
+    //    var tileGo = tileObjs[tileId];
+    //    var ren = tileGo.GetComponent<SpriteRenderer>();
+
+    //    // 방문한 타일은 기존 로직
+    //    if (tile.isVisited)
+    //    {
+    //        if (tile.autoTileId != (int)TileTypes.Empty)
+    //        {
+    //            ren.sprite = islandSprites[tile.autoTileId];
+    //        }
+    //        else
+    //        {
+    //            ren.sprite = null;
+    //        }
+    //    }
+    //    // 방문하지 않은 타일은 FOW 타일로 업데이트
+    //    else
+    //    {
+    //        tile.UpdateFowTileId(map);
+
+    //        if (fowSprites != null && tile.fowTilleId < fowSprites.Length)
+    //        {
+    //            ren.sprite = fowSprites[tile.fowTilleId];
+    //        }
+    //    }
+    //}
 
     public int ScreenPosToTileId(Vector3 screenPos)
     {
@@ -194,36 +254,82 @@ public class Stage : MonoBehaviour
         return GetTilePos(y, x);
     }
 
-    public void UpdateVisibility(int centerTileId)
+    public void OnTileVisited(int tileId)
     {
-        int centerY = centerTileId / mapWidth;
-        int centerX = centerTileId % mapWidth;
+        OnTileVisited(map.tiles[tileId]);
+    }
 
-        // 중심 타일을 기준으로 FOW 범위 내의 타일을 방문 처리
-        for (int y = centerY - FowRange; y <= centerY + FowRange; y++)
+    public void OnTileVisited(Tile tile)
+    {
+        int centerX = tile.id % mapWidth;
+        int centerY = tile.id / mapWidth;
+
+        for (int i = -FowRange; i <= FowRange; i++)
         {
-            for (int x = centerX - FowRange; x <= centerX + FowRange; x++)
+            for (int j = -FowRange; j <= FowRange; j++)
             {
+                int x = centerX + j;
+                int y = centerY + i;
                 if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
                     continue;
 
-                int tileId = y * mapWidth + x;
-                map.tiles[tileId].isVisited = true;
+                int id = y * mapWidth + x;
+                map.tiles[id].isVisited = true;
+                DecorateTile(id);
             }
         }
 
-        // FOW 범위 + 경계 타일까지 DecorateTile() 호출해서 안개 표현
-        int visualRange = FowRange + 1;
-        for (int y = centerY - visualRange; y <= centerY + visualRange; y++)
-        {
-            for (int x = centerX - visualRange; x <= centerX + visualRange; x++)
-            {
-                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
-                    continue;
+        int range = FowRange + 1;
 
-                int tileId = y * mapWidth + x;
-                DecorateTile(tileId);
+        for (int i = -range; i <= range; i++)
+        {
+            for (int j = -range; j <= range; j++)
+            {
+                if (i == range || i == -range || j == range || j == -range)
+                {
+                    int x = centerX + j;
+                    int y = centerY + i;
+                    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+                        continue;
+
+                    int id = y * mapWidth + x;
+                    map.tiles[id].UpdateFowTileId();
+                    DecorateTile(id);
+                }
             }
         }
     }
+
+    //public void UpdateVisibility(int centerTileId)
+    //{
+    //    int centerY = centerTileId / mapWidth;
+    //    int centerX = centerTileId % mapWidth;
+
+    //    // 중심 타일을 기준으로 FOW 범위 내의 타일을 방문 처리
+    //    for (int y = centerY - FowRange; y <= centerY + FowRange; y++)
+    //    {
+    //        for (int x = centerX - FowRange; x <= centerX + FowRange; x++)
+    //        {
+    //            if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+    //                continue;
+
+    //            int tileId = y * mapWidth + x;
+    //            map.tiles[tileId].isVisited = true;
+    //        }
+    //    }
+
+    //    // FOW 범위 + 경계 타일까지 DecorateTile() 호출해서 안개 표현
+    //    int visualRange = FowRange + 1;
+    //    for (int y = centerY - visualRange; y <= centerY + visualRange; y++)
+    //    {
+    //        for (int x = centerX - visualRange; x <= centerX + visualRange; x++)
+    //        {
+    //            if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+    //                continue;
+
+    //            int tileId = y * mapWidth + x;
+    //            DecorateTile(tileId);
+    //        }
+    //    }
+    //}
 }

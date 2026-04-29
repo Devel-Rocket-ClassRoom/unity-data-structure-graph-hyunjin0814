@@ -1,15 +1,23 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
     private Stage stage;
     private Animator animator;
-    private int currentTileId;
+    private int currentTileId = -1;
+    private int targetTileId = -1;
 
-    public float moveDuration = 0.5f;
+    public int CurrentTileId => currentTileId;
 
-    private Coroutine moveCoroutine;
+    private bool isMoving = false;
+    public float moveSpeed = 10f;
+    private Coroutine moveCoroutine = null;
+
+    //private int count = 0;
+
+    public bool IsMoving => isMoving;
 
     private void Awake()
     {
@@ -22,7 +30,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        if (moveCoroutine != null) 
+        if (isMoving) 
             return;
 
         Sides direction = GetInputDirection();
@@ -34,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
     }
     public void MoveTo(int tileId)
     {
-        currentTileId = tileId;
+        targetTileId = tileId;
 
         if (moveCoroutine != null)
         {
@@ -46,27 +54,29 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator MoveRoutine()
     {
-        var startPos = transform.position;
-        var targetPos = stage.GetTilePos(currentTileId); 
-        float elapsedTime = 0f;
-
+        isMoving = true;
         animator.speed = 1f;
-        while (elapsedTime < moveDuration)
+        var startPos = transform.position;
+        var targetPos = stage.GetTilePos(targetTileId); 
+        var duration = Vector3.Distance(startPos, targetPos) / moveSpeed;
+
+        float elapsedTime = 0f;
+        while (elapsedTime < 1f)
         {
-            elapsedTime += Time.deltaTime;
-            float t = elapsedTime / moveDuration;
-
-            transform.position = Vector3.Lerp(startPos, targetPos, t);
-
+            elapsedTime += Time.deltaTime / duration;
+            transform.position = Vector3.Lerp(startPos, targetPos, elapsedTime);
             yield return null;
         }
 
         transform.position = targetPos;
-
-        stage.UpdateVisibility(currentTileId);
-
-        moveCoroutine = null;
         animator.speed = 0f;
+
+        currentTileId = targetTileId;
+        targetTileId = -1;
+        stage.OnTileVisited(currentTileId);
+        //stage.UpdateVisibility(currentTileId);
+        moveCoroutine = null;
+        isMoving = false;
     }
 
     private Sides GetInputDirection()
@@ -94,6 +104,7 @@ public class PlayerMovement : MonoBehaviour
     public void SetPosition(int tileId)
     {
         currentTileId = tileId;
+        targetTileId = -1;
 
         transform.position = stage.GetTilePos(tileId);
 
@@ -108,6 +119,51 @@ public class PlayerMovement : MonoBehaviour
         StopCoroutine(moveCoroutine);
         moveCoroutine = null;
         animator.speed = 0f;
+        isMoving = false;
+    }
+
+    public void FollowPath(List<Tile> path)
+    {
+        if (moveCoroutine != null)
+        {
+            ClearCoroutine();
+        }
+
+        moveCoroutine = StartCoroutine(PathMoveRoutine(path));
+    }
+
+    private IEnumerator PathMoveRoutine(List<Tile> path)
+    {
+        isMoving = true;
+        animator.speed = 1f;
+        //count = 0;
+
+        foreach (var tile in path)
+        {
+            targetTileId = tile.id;
+            Vector3 targetPos = stage.GetTilePos(targetTileId);
+
+            while (Vector3.Distance(transform.position, targetPos) > 0.01f)
+            {
+                transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    targetPos,
+                    moveSpeed * Time.deltaTime
+                );
+                yield return null;
+            }
+
+            transform.position = targetPos;
+            currentTileId = targetTileId;
+
+            stage.OnTileVisited(currentTileId);
+            //count++;
+        }
+
+        animator.speed = 0f;
+        moveCoroutine = null;
+        isMoving = false;
+        //Debug.Log($"타일 {count - 1}개 이동");
     }
 }
     

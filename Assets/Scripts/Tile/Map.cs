@@ -71,6 +71,7 @@ public class Map
         for (int i = 0; i < tiles.Length; i++)
         {
             tiles[i].UpdateAutoTileId();
+            tiles[i].UpdateFowTileId();
         }
     }
 
@@ -133,5 +134,13 @@ public class Map
     {
         if (r < 0 || r >= rows || c < 0 || c >= cols) return null;
         return tiles[r * cols + c];
+    }
+
+    public void ResetNodePrevious()
+    {
+        foreach (var tile in tiles)
+        {
+            tile.previous = null;
+        }
     }
 }
